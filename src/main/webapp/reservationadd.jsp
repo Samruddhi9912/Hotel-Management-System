@@ -7,49 +7,45 @@
     <style>body { background-color: #f8f9fa; }</style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark">
+    <nav class="navbar navbar-dark bg-success">
         <div class="container"><a class="navbar-brand" href="index.jsp">🏨 Grand Hotel</a></div>
     </nav>
 
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white text-center py-3">
+                <div class="card shadow-sm border-success">
+                    <div class="card-header bg-success text-white text-center py-3">
                         <h4 class="mb-0">New Reservation</h4>
                     </div>
                     <div class="card-body p-4">
                         <form action="addReservation" method="post">
                             <div class="mb-3">
-                                <label class="form-label">Reservation ID</label>
-                                <input type="number" name="id" class="form-control" placeholder="Enter ID" required>
-                            </div>
-                            <div class="mb-3">
                                 <label class="form-label">Customer Name</label>
-                                <input type="text" name="name" class="form-control" placeholder="Full Name" required>
+                                <input type="text" name="name" class="form-control border-success" placeholder="Full Name" required>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Room Number</label>
-                                    <input type="text" name="room" class="form-control" placeholder="e.g. 101" required>
+                                    <input type="text" name="room" class="form-control border-success" placeholder="e.g. 101" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Amount ($)</label>
-                                    <input type="number" step="0.01" name="amount" class="form-control" placeholder="0.00" required>
+                                    <input type="number" step="0.01" min="0" name="amount" class="form-control border-success" placeholder="0.00" required>
                                 </div>
                             </div>
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Check-In</label>
-                                    <input type="date" name="in" class="form-control" required>
+                                    <input type="date" name="in" class="form-control border-success" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Check-Out</label>
-                                    <input type="date" name="out" class="form-control" required>
+                                    <input type="date" name="out" class="form-control border-success" required>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 py-2">Confirm Booking</button>
-                            <a href="index.jsp" class="btn btn-light w-100 mt-2">Back</a>
+                            <button type="submit" class="btn btn-success w-100 py-2">Confirm Booking</button>
+                            <a href="index.jsp" class="btn btn-light w-100 mt-2 text-success">Back</a>
                         </form>
                     </div>
                 </div>

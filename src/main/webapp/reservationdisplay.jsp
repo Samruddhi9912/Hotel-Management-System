@@ -7,12 +7,12 @@
 <body>
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Current Reservations</h2>
-            <a href="index.jsp" class="btn btn-secondary btn-sm">Back to Home</a>
+            <h2 class="text-success">Current Reservations</h2>
+            <a href="index.jsp" class="btn btn-success btn-sm">Back to Home</a>
         </div>
         <div class="table-responsive">
             <table class="table table-hover table-bordered shadow-sm">
-                <thead class="table-dark">
+                <thead class="table-success">
                     <tr>
                         <th>ID</th><th>Customer Name</th><th>Room</th><th>Check-In</th><th>Check-Out</th><th>Amount</th>
                     </tr>
@@ -25,7 +25,7 @@
                     <tr>
                         <td><%= r.getReservationID() %></td>
                         <td class="fw-bold"><%= r.getCustomerName() %></td>
-                        <td><span class="badge bg-info text-dark">Room <%= r.getRoomNumber() %></span></td>
+                        <td><span class="badge bg-success">Room <%= r.getRoomNumber() %></span></td>
                         <td><%= r.getCheckIn() %></td>
                         <td><%= r.getCheckOut() %></td>
                         <td class="text-success fw-bold">$<%= String.format("%.2f", r.getTotalAmount()) %></td>

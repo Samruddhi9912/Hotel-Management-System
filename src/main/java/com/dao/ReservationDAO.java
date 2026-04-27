@@ -6,7 +6,7 @@ import com.model.Reservation;
 public class ReservationDAO {
     private String url = "jdbc:mysql://localhost:3306/hotel_db";
     private String user = "root"; 
-    private String pass = ""; // Update this!
+    private String pass = "password"; // Update this!
 
     protected Connection getConnection() throws SQLException {
         try { Class.forName("com.mysql.cj.jdbc.Driver"); } catch (Exception e) {}
@@ -14,11 +14,14 @@ public class ReservationDAO {
     }
 
     public void addReservation(Reservation r) throws SQLException {
-        String sql = "INSERT INTO Reservations VALUES (?,?,?,?,?,?)";
+        // ID is removed from the query to support AUTO_INCREMENT
+        String sql = "INSERT INTO Reservations (CustomerName, RoomNumber, CheckIn, CheckOut, TotalAmount) VALUES (?,?,?,?,?)";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setInt(1, r.getReservationID()); ps.setString(2, r.getCustomerName());
-            ps.setString(3, r.getRoomNumber()); ps.setDate(4, r.getCheckIn());
-            ps.setDate(5, r.getCheckOut()); ps.setDouble(6, r.getTotalAmount());
+            ps.setString(1, r.getCustomerName());
+            ps.setString(2, r.getRoomNumber());
+            ps.setDate(3, r.getCheckIn());
+            ps.setDate(4, r.getCheckOut());
+            ps.setDouble(5, r.getTotalAmount());
             ps.executeUpdate();
         }
     }

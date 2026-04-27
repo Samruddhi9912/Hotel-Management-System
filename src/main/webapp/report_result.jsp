@@ -7,15 +7,15 @@
 </head>
 <body>
     <div class="container mt-5">
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+        <div class="card shadow-sm border-success">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-3">
                 <h5 class="mb-0">Generated Report Results</h5>
-                <button onclick="window.print()" class="btn btn-sm btn-light">Print Report</button>
+                <button onclick="window.print()" class="btn btn-sm btn-light text-success fw-bold">Print Report</button>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped align-middle">
-                        <thead class="table-light">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-success">
                             <tr>
                                 <th>Res. ID</th>
                                 <th>Customer Name</th>
@@ -36,10 +36,10 @@
                             <tr>
                                 <td>#<%= r.getReservationID() %></td>
                                 <td class="fw-bold"><%= r.getCustomerName() %></td>
-                                <td><span class="badge bg-secondary">Room <%= r.getRoomNumber() %></span></td>
+                                <td><span class="badge bg-success">Room <%= r.getRoomNumber() %></span></td>
                                 <td><%= r.getCheckIn() %></td>
                                 <td><%= r.getCheckOut() %></td>
-                                <td class="text-end fw-bold">$<%= String.format("%.2f", r.getTotalAmount()) %></td>
+                                <td class="text-end fw-bold text-success">$<%= String.format("%.2f", r.getTotalAmount()) %></td>
                             </tr>
                             <% } %>
                             <tr class="table-success fw-bold">
@@ -56,7 +56,7 @@
                 </div>
             </div>
             <div class="card-footer bg-white border-0 text-center pb-4">
-                <a href="report_form.jsp" class="btn btn-primary">Generate Another Report</a>
+                <a href="report_form.jsp" class="btn btn-success">Generate Another Report</a>
             </div>
         </div>
     </div>
