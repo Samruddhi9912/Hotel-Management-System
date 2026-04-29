@@ -10,19 +10,24 @@ import com.model.Reservation;
 @WebServlet("/addReservation")
 public class AddReservationServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // ID parameter is no longer required for creation
-        Reservation r = new Reservation();
-        r.setCustomerName(req.getParameter("name"));
-        r.setRoomNumber(req.getParameter("room"));
-        r.setCheckIn(Date.valueOf(req.getParameter("in")));
-        r.setCheckOut(Date.valueOf(req.getParameter("out")));
-        r.setTotalAmount(Double.parseDouble(req.getParameter("amount")));
-        
-        try { 
-            new ReservationDAO().addReservation(r); 
-            resp.sendRedirect("reservationdisplay.jsp"); 
-        } catch(Exception e) { 
-            throw new ServletException(e); 
+        ReservationDAO dao = new ReservationDAO();
+        String name = req.getParameter("name");
+        String room = req.getParameter("room");
+        String type = req.getParameter("type");
+        Date in = Date.valueOf(req.getParameter("in"));
+        Date out = Date.valueOf(req.getParameter("out"));
+        double amount = Double.parseDouble(req.getParameter("amount"));
+
+        try {
+            if (dao.isRoomBooked(room, type, in, out)) {
+                resp.sendRedirect("reservationadd.jsp?error=booked");
+            } else {
+                Reservation r = new Reservation(0, name, room, type, in, out, amount);
+                dao.addReservation(r);
+                resp.sendRedirect("reservationdisplay.jsp");
+            }
+        } catch (Exception e) {
+            throw new ServletException(e);
         }
     }
 }
