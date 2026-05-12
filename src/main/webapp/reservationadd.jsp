@@ -1,8 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.dao.ReservationDAO" %>
+<%@ page import="com.dao.ReservationDAO, java.util.List" %>
 <%
     ReservationDAO dao = new ReservationDAO();
     int nextId = dao.getNextReservationId(); 
+    List<Integer> bookedRooms = dao.getAllBookedRoomNumbers();
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,12 +24,13 @@
         .page-title { color: #198754; font-weight: bold; margin-bottom: 30px; text-align: center; }
         .form-label { font-weight: 600; color: #444; font-size: 0.85rem; text-transform: uppercase; }
 
+        /* Input Vibe: Thin green border on hover */
         .form-control, .form-select {
-            border-radius: 12px; padding: 12px; border: 1px solid transparent; 
+            border-radius: 12px; padding: 12px; border: 1px solid #dee2e6; 
             background-color: #fcfcfc; font-weight: 400; transition: 0.3s; color: #000;
         }
         .form-control:hover, .form-select:hover, .form-control:focus {
-            border: 1px solid #198754; background-color: white; outline: none; box-shadow: none;
+            border-color: #198754; background-color: white; outline: none; box-shadow: none;
         }
 
         .btn-confirm {
@@ -37,62 +39,22 @@
         }
         .btn-confirm:hover { background-color: #198754; color: white; }
 
-        /* MODAL VIBE UPDATES */
-        .modal-content { 
-            border-radius: 30px; 
-            border: 1px solid transparent; /* Thin border starts transparent */
-            padding: 30px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: border-color 0.3s ease;
-        }
-        
-        /* Thin green border on hover for the box */
-        .modal-content:hover {
-            border-color: #198754;
-        }
-        
-        .modal-title-custom {
-            color: #198754;
-            font-weight: bold;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
+        /* Modal Styles */
+        .modal-content { border-radius: 30px; border: 1px solid transparent; padding: 30px; transition: 0.3s; }
+        .modal-content:hover { border-color: #198754; }
+        .modal-title-custom { color: #198754; font-weight: bold; font-size: 1.5rem; margin-bottom: 15px; }
 
-        /* Modal Buttons: White background, Green border */
         .btn-modal-action { 
-            background-color: white; 
-            color: #198754; 
-            border: 1.5px solid #198754;
-            border-radius: 12px; 
-            width: 120px; 
-            font-weight: 600; 
-            padding: 10px;
-            transition: 0.3s ease;
+            background-color: white; color: #198754; border: 1.5px solid #198754;
+            border-radius: 12px; width: 120px; font-weight: 600; padding: 10px; transition: 0.3s;
         }
+        .btn-modal-action:hover { background-color: #198754; color: white; }
 
-        /* Hover & Active/Click: Green background, White text */
-        .btn-modal-action:hover, .btn-modal-action:active { 
-            background-color: #198754 !important; 
-            color: white !important;
-            box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
-        }
-
-        /* Secondary Button (No) - keeps standard borders but follows same hover logic */
         .btn-modal-secondary {
-            background-color: white;
-            color: #666;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            width: 120px;
-            font-weight: 600;
-            padding: 10px;
-            transition: 0.3s ease;
+            background-color: white; color: #666; border: 1px solid #ddd;
+            border-radius: 12px; width: 120px; font-weight: 600; padding: 10px; transition: 0.3s;
         }
-        .btn-modal-secondary:hover {
-            background-color: #666 !important;
-            color: white !important;
-            border-color: #666;
-        }
+        .btn-modal-secondary:hover { background-color: #666; color: white; }
 
         .dash-link { color: #198754; text-decoration: none; font-weight: 600; }
         .dash-link:hover { text-decoration: underline; }
@@ -105,7 +67,6 @@
         <h3 class="page-title">NEW RESERVATION</h3>
         
         <form id="addForm" action="addReservation" method="post">
-            <!-- Form fields remain the same -->
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Booking ID</label>
@@ -162,16 +123,12 @@
     </div>
 </div>
 
-<!-- Refined Modal -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-body text-center">
                 <h4 class="modal-title-custom">Finalize Booking?</h4>
-                <p class="text-muted" style="font-weight: 500;">
-                    Are you sure you want to save this reservation in the records?
-                </p>
-                
+                <p class="text-muted" style="font-weight: 500;">Save this reservation in the records?</p>
                 <div class="d-flex justify-content-center gap-3 mt-4">
                     <button type="button" class="btn-modal-action" onclick="submitForm()">YES</button>
                     <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">NO</button>
@@ -184,6 +141,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let myModal;
+    // List of booked rooms from server
+    const bookedRooms = [<%= bookedRooms != null ? bookedRooms.toString().replaceAll("[\\[\\]]", "") : "" %>];
 
     function initPage() {
         const today = new Date().toISOString().split('T')[0];
@@ -197,28 +156,9 @@
         if (inDate) {
             let nextDay = new Date(inDate);
             nextDay.setDate(nextDay.getDate() + 1);
-            const minOut = nextDay.toISOString().split('T')[0];
-            outDateInput.setAttribute('min', minOut);
-            if (outDateInput.value && outDateInput.value < minOut) {
-                outDateInput.value = "";
-                document.getElementById('totalAmt').value = "0.00";
-            }
+            outDateInput.setAttribute('min', nextDay.toISOString().split('T')[0]);
         }
         calculate();
-    }
-
-    function showConfirm() {
-        const form = document.getElementById('addForm');
-        if (form.checkValidity()) {
-            myModal = new bootstrap.Modal(document.getElementById('confirmModal'));
-            myModal.show();
-        } else {
-            form.reportValidity();
-        }
-    }
-
-    function submitForm() {
-        document.getElementById('addForm').submit();
     }
 
     function updateRooms() {
@@ -226,9 +166,20 @@
         const sel = document.getElementById('roomSelect');
         sel.innerHTML = "";
         let start = (type === "Non-AC") ? 101 : (type === "AC") ? 201 : 301;
+        
+        let availableCount = 0;
         for(let i=start; i<=start+99; i++) {
+            if (!bookedRooms.includes(i)) {
+                let o = document.createElement('option');
+                o.value = i; o.innerText = "Room " + i;
+                sel.appendChild(o);
+                availableCount++;
+            }
+        }
+        
+        if(availableCount === 0) {
             let o = document.createElement('option');
-            o.value = i; o.innerText = "Room " + i;
+            o.innerText = "All Full"; o.disabled = true;
             sel.appendChild(o);
         }
         calculate();
@@ -246,7 +197,15 @@
             document.getElementById('totalAmt').value = "0.00"; 
         }
     }
-</script>
 
+    function showConfirm() {
+        if (document.getElementById('addForm').checkValidity()) {
+            myModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            myModal.show();
+        } else { document.getElementById('addForm').reportValidity(); }
+    }
+
+    function submitForm() { document.getElementById('addForm').submit(); }
+</script>
 </body>
 </html>

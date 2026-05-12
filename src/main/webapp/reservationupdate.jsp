@@ -1,5 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.dao.ReservationDAO, com.model.Reservation" %>
+<%@ page import="com.dao.ReservationDAO, com.model.Reservation, java.util.List" %>
+<%
+    // Fetch booked rooms at the top level to pass to JavaScript
+    ReservationDAO dao = new ReservationDAO();
+    List<Integer> bookedRooms = dao.getAllBookedRoomNumbers();
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +24,6 @@
         .page-title { color: #198754; font-weight: bold; margin-bottom: 30px; text-align: center; }
         .form-label { font-weight: 600; color: #444; font-size: 0.85rem; text-transform: uppercase; }
 
-        /* Constant Theme: Thin green border on hover */
         .form-control, .form-select {
             border-radius: 12px; padding: 12px; border: 1px solid #dee2e6; 
             background-color: #fcfcfc; font-weight: 600; transition: 0.3s; color: #444;
@@ -35,7 +39,6 @@
         }
         .btn-action:hover { background-color: #198754; color: white; }
 
-        /* Amount is black but maintains constant weight */
         .amount-black { color: #000 !important; }
 
         .modal-content { 
@@ -72,7 +75,6 @@
             if (sid == null) sid = ""; 
         %>
 
-        <!-- Search Section -->
         <form method="get" class="mb-4">
             <label class="form-label">Enter Ticket ID to Fetch Details</label>
             <div class="input-group">
@@ -84,7 +86,7 @@
 
         <%
             if(!sid.isEmpty()) {
-                Reservation r = new ReservationDAO().getById(Integer.parseInt(sid));
+                Reservation r = dao.getById(Integer.parseInt(sid));
                 if(r != null) {
         %>
                 <hr style="border-top: 1px solid #eee; margin: 30px 0;">
@@ -176,13 +178,23 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const roomDropdown = document.getElementById('roomSelect');
-    const roomTypeDropdown = document.getElementById('roomType');
-    const currentRoom = "<%= (request.getParameter("searchId") != null) ? "FETCHED" : "" %>"; 
-    // Note: In a real scenario, you'd pass the specific room ID from Java to JS variable here.
+    // JS Array of booked rooms from Java
+    const bookedRooms = [<%= bookedRooms != null ? bookedRooms.toString().replaceAll("[\\[\\]]", "") : "" %>];
     
+    // The current room number already assigned to this specific fetched reservation
+    let currentlyAssignedRoom = null;
+    <% if(!sid.isEmpty()) { 
+         Reservation res = dao.getById(Integer.parseInt(sid));
+         if(res != null) { %>
+            currentlyAssignedRoom = <%= res.getRoomNumber() %>;
+    <%   }
+       } %>
+
     function populateRooms() {
-        if(!roomTypeDropdown) return;
+        const roomTypeDropdown = document.getElementById('roomType');
+        const roomDropdown = document.getElementById('roomSelect');
+        if(!roomTypeDropdown || !roomDropdown) return;
+        
         const selectedType = roomTypeDropdown.value;
         let start, end;
 
@@ -191,31 +203,44 @@
         else if (selectedType === "Deluxe") { start = 301; end = 400; }
 
         roomDropdown.innerHTML = "";
+        let availableCount = 0;
+
         for (let i = start; i <= end; i++) {
+            // Rule: Show if it's NOT booked OR if it's the room CURRENTLY assigned to this ticket
+            if (!bookedRooms.includes(i) || i === currentlyAssignedRoom) {
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = "Room " + i;
+                
+                // If it's the current room, select it by default
+                if (i === currentlyAssignedRoom) opt.selected = true;
+                
+                roomDropdown.appendChild(opt);
+                availableCount++;
+            }
+        }
+        
+        if(availableCount === 0) {
             let opt = document.createElement('option');
-            opt.value = i;
-            opt.innerText = "Room " + i;
-            // Matches stored room number on first load
-            <% if (request.getParameter("searchId") != null) { 
-                 Reservation r2 = new ReservationDAO().getById(Integer.parseInt(request.getParameter("searchId")));
-                 if(r2 != null) { %>
-                    if (i == "<%= r2.getRoomNumber() %>") opt.selected = true;
-            <%   } 
-               } %>
+            opt.innerText = "No Available Rooms";
+            opt.disabled = true;
             roomDropdown.appendChild(opt);
         }
     }
 
     function calculate() {
+        const roomTypeDropdown = document.getElementById('roomType');
         const price = roomTypeDropdown.options[roomTypeDropdown.selectedIndex].getAttribute('data-price');
         const d1 = new Date(document.getElementById('inDate').value);
         const d2 = new Date(document.getElementById('outDate').value);
         
-        populateRooms(); // Dynamic room update
+        populateRooms(); 
 
         if (d1 && d2 && d2 > d1) {
             const diff = Math.ceil((d2 - d1) / (1000 * 3600 * 24));
             document.getElementById('totalAmt').value = (diff * price).toFixed(2);
+        } else {
+            document.getElementById('totalAmt').value = "0.00";
         }
     }
 
@@ -232,7 +257,6 @@
         document.getElementById('updateForm').submit();
     }
 
-    // Auto-load rooms when details are fetched
     window.onload = populateRooms;
 </script>
 

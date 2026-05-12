@@ -48,7 +48,7 @@ public class ReservationDAO {
         return list;
     }
 
-    // --- READ BY ID (New Method) ---
+    // --- READ BY ID ---
     public Reservation getById(int id) throws SQLException {
         Reservation reservation = null;
         String sql = "SELECT * FROM Reservations WHERE ReservationID = ?";
@@ -91,6 +91,26 @@ public class ReservationDAO {
         }
     }
 
+    // --- NEW: FETCH BOOKED ROOMS FOR DYNAMIC FILTERING ---
+    public List<Integer> getAllBookedRoomNumbers() {
+        List<Integer> rooms = new ArrayList<>();
+        // Only fetch rooms where checkout is in the future or today
+        String sql = "SELECT RoomNumber FROM Reservations WHERE CheckOut >= CURRENT_DATE";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                // Parsing to Integer since your JSP logic uses number loops (101-401)
+                rooms.add(Integer.parseInt(rs.getString("RoomNumber")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); 
+        }
+        return rooms;
+    }
+
     // --- REPORTING METHODS ---
     public List<Reservation> getByType(String type) throws SQLException {
         List<Reservation> list = new ArrayList<>();
@@ -124,7 +144,6 @@ public class ReservationDAO {
         }
     }
     
-    // Logic for Add Reservation page to show the next available ID
     public int getNextReservationId() {
         int nextId = 1; 
         String sql = "SELECT COALESCE(MAX(ReservationID), 0) + 1 FROM Reservations";
@@ -142,7 +161,7 @@ public class ReservationDAO {
         return nextId;
     }
     
-    // --- HELPER METHOD (Extracts data from DB row to Object) ---
+    // --- HELPER METHOD ---
     private Reservation extractReservation(ResultSet rs) throws SQLException {
         return new Reservation(
             rs.getInt("ReservationID"),
